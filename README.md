@@ -63,6 +63,5 @@ src/
 3. Deploy
 
 O frontend está sendo preparado para deploy na Vercel.
-Após a configuração, você poderá acessar a aplicação em:
 
-[em deploy...]
+Infelizmente não consegui fazer o deploy do frontend a tempo, devido alguns erros mas em breve estará disponível.
