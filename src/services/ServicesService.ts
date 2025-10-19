@@ -6,6 +6,11 @@ export class ServiceService {
     return response.data.data;
   }
 
+  static async getById(id: number) {
+    const response = await privateApi.get(`/api/services/${id}`);
+    return response.data;
+  }
+
   static async create(data: any) {
     const response = await privateApi.post("/api/services", data);
     return response.data;

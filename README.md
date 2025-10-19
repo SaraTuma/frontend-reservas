@@ -1,6 +1,6 @@
-# Frontend – [Nome do Projeto]
+# Frontend – Plataforma de reservas
 
-Este repositório contém o frontend da aplicação [Nome do Projeto], desenvolvido com **Next.js** e **Material UI**, responsável por fornecer a interface de usuário para gerenciamento de usuários, serviços, reservas e transações.
+Este repositório contém o frontend da Plataforma de reservas, desenvolvido com **Next.js** e **Material UI**, responsável por fornecer a interface de usuário para gerenciamento de usuários, serviços, reservas e transações.
 
 O frontend consome a API do backend hospedado no Render.
 
@@ -12,8 +12,7 @@ O frontend consome a API do backend hospedado no Render.
 - React
 - Material UI (MUI)
 - Axios (para requisições HTTP)
-- TypeScript (opcional)
-- Zustand / Context API (ou outro gerenciamento de estado, se usado)
+- TypeScript 
 
 ---
 
@@ -41,7 +40,7 @@ git clone [link-do-repositório-frontend]
 cd frontend
 npm install
 
-NEXT_PUBLIC_API_URL=https://[seu-backend].onrender.com
+NEXT_PUBLIC_API_URL=https://backend-reservas-cl7a.onrender.com
 
 npm run dev
 

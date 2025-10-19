@@ -66,16 +66,10 @@ export default function ReservationsPage() {
     return () => { isMounted = false; };
   };
 
-  // -----------------------------
-  // Fetch inicial
-  // -----------------------------
   useEffect(() => {
     fetchReservations();
   }, []);
 
-  // -----------------------------
-  // Filtro de clientes
-  // -----------------------------
   useEffect(() => {
     let isMounted = true;
     const timeout = setTimeout(async () => {
@@ -95,9 +89,7 @@ export default function ReservationsPage() {
     };
   }, [clientQuery]);
 
-  // -----------------------------
-  // Filtro de serviços
-  // -----------------------------
+
   useEffect(() => {
     let isMounted = true;
     const timeout = setTimeout(async () => {
@@ -117,9 +109,6 @@ export default function ReservationsPage() {
     };
   }, [serviceQuery]);
 
-  // -----------------------------
-  // Criar reserva
-  // -----------------------------
   const handleCreateReservation = async () => {
     if (!selectedService) {
       showSnackbar("Selecione um cliente e um serviço.", "error");
@@ -132,7 +121,6 @@ export default function ReservationsPage() {
       showSnackbar("Reserva criada com sucesso!", "success");
       setDialogOpen(false);
 
-      // Atualiza a tabela
       await fetchReservations();
     } catch (error: unknown) {
       if (error instanceof Error) showSnackbar(`Erro ao criar reserva: ${error.message}`, "error");
@@ -142,16 +130,12 @@ export default function ReservationsPage() {
     }
   };
 
-  // -----------------------------
-  // Cancelar reserva
-  // -----------------------------
   const handleCancel = async (id: string) => {
     if (confirm("Deseja realmente cancelar esta reserva?")) {
       try {
         await ReservationService.cancel(id);
         showSnackbar("Reserva cancelada.", "success");
 
-        // Atualiza a tabela
         await fetchReservations();
       } catch (error: unknown) {
         if (error instanceof Error) showSnackbar(`Erro ao cancelar reserva: ${error.message}`, "error");
@@ -160,9 +144,7 @@ export default function ReservationsPage() {
     }
   };
 
-  // -----------------------------
-  // Colunas da tabela
-  // -----------------------------
+
   const columns: GridColDef<Reservation>[] = [
     { field: "id", headerName: "ID", flex: 0.3 },
     { field: "clientName", headerName: "Cliente", flex: 1 },

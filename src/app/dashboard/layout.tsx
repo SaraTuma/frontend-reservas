@@ -14,7 +14,6 @@ import {
   datePickersCustomizations,
   treeViewCustomizations,
 } from "@/theme/customizations";
-import { getUser } from "@/utils/token";
 
 
 const xThemeComponents = {

@@ -6,6 +6,11 @@ export class UserService {
     return response.data.data;
   }
 
+  static async getById(id: string) {
+    const response = await privateApi.get(`/api/users/${id}`);
+    return response.data;
+  }
+
   static async getClientsByProvider(providerId: string) {
     const response = await privateApi.get(`/api/users/${providerId}`);
     return response.data;
