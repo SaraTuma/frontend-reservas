@@ -11,6 +11,7 @@ import OptionsMenu from './OptionsMenu';
 import { getUser } from '@/utils/token';
 import Image from "next/image";
 import { useEffect, useState } from 'react';
+import Chip from '@mui/material/Chip';
 
 const drawerWidth = 240;
 
@@ -34,7 +35,23 @@ export default function SideMenu() {
     const u = getUser();
     setUser(u);
   }, []);
-   if (!mounted) return null;
+
+  if (!mounted) return null;
+
+  // função para definir a cor do tipo de usuário
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'error';
+      case 'PROVIDER':
+        return 'primary';
+      case 'CLIENT':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -52,7 +69,7 @@ export default function SideMenu() {
           p: 1.5,
         }}
       >
-         <Box sx={{ display: { xs: 'flex'} }}>
+        <Box sx={{ display: { xs: 'flex' } }}>
           <Image
             src="/aoservices.png"
             alt="Logo"
@@ -60,9 +77,26 @@ export default function SideMenu() {
             height={50}
             style={{ borderRadius: 12 }}
           />
-      </Box>
+        </Box>
       </Box>
       <Divider />
+      <Box
+      sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          p: 1,
+        }}
+      >
+        {/* Badge mostrando o tipo de usuário */}
+          {user?.role && (
+            <Chip
+              label={user.role}
+              color={getRoleColor(user.role)}
+              size="small"
+              sx={{ mt: 0.5, fontWeight: 500 }}
+            />
+          )}
+      </Box>
       <Box
         sx={{
           overflow: 'auto',
@@ -89,13 +123,14 @@ export default function SideMenu() {
           src="/static/images/avatar/7.jpg"
           sx={{ width: 36, height: 36 }}
         />
-        <Box sx={{ mr: 'auto' }}>
+        <Box sx={{ mr: 'auto', display: 'flex', flexDirection: 'column' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
             {user?.name}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {user?.email}
           </Typography>
+          
         </Box>
         <OptionsMenu />
       </Stack>

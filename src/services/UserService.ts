@@ -6,7 +6,7 @@ export class UserService {
     return response.data.data;
   }
 
-  static async getById(id: string) {
+  static async getById(id: number) {
     const response = await privateApi.get(`/api/users/${id}`);
     return response.data;
   }

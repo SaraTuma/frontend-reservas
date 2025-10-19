@@ -25,8 +25,13 @@ import { UserService } from "@/services/UserService";
 import { ServiceService } from "@/services/ServicesService";
 import { Reservation, Service, User } from "@/types/ApiResponse";
 
+interface ReservationWithNames extends Reservation {
+  clientName: string;
+  serviceName: string;
+}
+
 export default function ReservationsPage() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [reservations, setReservations] = useState<ReservationWithNames[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
@@ -35,35 +40,41 @@ export default function ReservationsPage() {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
-  const [clientQuery, setClientQuery] = useState("");
-  const [clients, setClients] = useState<User[]>([]);
-
   const [serviceQuery, setServiceQuery] = useState("");
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-
   const [submitting, setSubmitting] = useState(false);
 
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbar({ open: true, message, severity });
   };
 
-  // -----------------------------
-  // Função centralizada para buscar reservas
-  // -----------------------------
+
   const fetchReservations = async () => {
-    let isMounted = true;
     setLoading(true);
     try {
       const data = await ReservationService.getAll();
-      if (isMounted) setReservations(data);
+
+      const enriched: ReservationWithNames[] = await Promise.all(
+        data.data.map(async (resv: Reservation) => {
+          const clientResp = await UserService.getById(Number(resv.id)); 
+          const serviceResp = await ServiceService.getById(Number(resv.id));
+
+          return {
+            ...resv,
+            clientName: clientResp.data?.[0]?.name ?? "Desconhecido",
+            serviceName: serviceResp.data?.[0]?.name ?? "Desconhecido",
+          };
+        })
+      );
+
+      setReservations(enriched);
     } catch (error: unknown) {
       if (error instanceof Error) showSnackbar(`Erro ao carregar reservas: ${error.message}`, "error");
       else showSnackbar("Erro ao carregar reservas.", "error");
     } finally {
-      if (isMounted) setLoading(false);
+      setLoading(false);
     }
-    return () => { isMounted = false; };
   };
 
   useEffect(() => {
@@ -71,47 +82,22 @@ export default function ReservationsPage() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
     const timeout = setTimeout(async () => {
-      if (!isMounted) return;
-      if (clientQuery.trim() !== "") {
-        const allUsers = await UserService.getAll();
-        const filtered = allUsers.filter((u: User) =>
-          u.name.toLowerCase().includes(clientQuery.toLowerCase())
-        );
-        if (isMounted) setClients(filtered);
-      }
-    }, 400);
-
-    return () => {
-      clearTimeout(timeout);
-      isMounted = false;
-    };
-  }, [clientQuery]);
-
-
-  useEffect(() => {
-    let isMounted = true;
-    const timeout = setTimeout(async () => {
-      if (!isMounted) return;
       if (serviceQuery.trim() !== "") {
         const allServices = await ServiceService.getAll();
         const filtered = allServices.filter((s: Service) =>
           s.name.toLowerCase().includes(serviceQuery.toLowerCase())
         );
-        if (isMounted) setServices(filtered);
+        setServices(filtered);
       }
     }, 400);
 
-    return () => {
-      clearTimeout(timeout);
-      isMounted = false;
-    };
+    return () => clearTimeout(timeout);
   }, [serviceQuery]);
 
   const handleCreateReservation = async () => {
     if (!selectedService) {
-      showSnackbar("Selecione um cliente e um serviço.", "error");
+      showSnackbar("Selecione um serviço.", "error");
       return;
     }
 
@@ -144,11 +130,17 @@ export default function ReservationsPage() {
     }
   };
 
-
-  const columns: GridColDef<Reservation>[] = [
+  const columns: GridColDef<ReservationWithNames>[] = [
     { field: "id", headerName: "ID", flex: 0.3 },
     { field: "clientName", headerName: "Cliente", flex: 1 },
     { field: "serviceName", headerName: "Serviço", flex: 1 },
+    {
+      field: "pricePaid",
+      headerName: "Preço Pago",
+      flex: 0.5,
+      valueFormatter: ({ value }) => `KZ ${Number(value || 0).toFixed(2)}`,
+    }
+    ,
     { field: "status", headerName: "Status", flex: 0.6 },
     {
       field: "actions",
@@ -156,11 +148,7 @@ export default function ReservationsPage() {
       flex: 0.5,
       renderCell: (params) =>
         params.row.status !== "CANCELLED" && (
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={() => handleCancel(params.row.id)}
-          >
+          <Button variant="outlined" color="error" onClick={() => handleCancel(params.row.id)}>
             Cancelar
           </Button>
         ),
@@ -213,11 +201,7 @@ export default function ReservationsPage() {
                       <SearchIcon color="action" />
                     </Box>
                   ),
-                  endAdornment: (
-                    <>
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
+                  endAdornment: <>{params.InputProps.endAdornment}</>,
                 }}
               />
             )}
