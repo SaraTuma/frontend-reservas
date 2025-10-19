@@ -1,118 +1,128 @@
 "use client";
-import * as React from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Typography,
+  Snackbar,
+  Alert,
+  IconButton,
+  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
-  IconButton,
-  Stack,
-  Divider,
+  DialogActions,
+  Button,
+  Grid,
 } from "@mui/material";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { TransactionsService } from "@/services/TransactionsService";
-import { UserService } from "@/services/UserService";
 
-interface TransactionBackend {
+interface Transaction {
   id: number;
   fromUserId: number;
   toUserId: number;
-  amount: string;
+  amount: string | number;
   type: string;
-  description: string;
   createdAt: string;
 }
 
-interface TransactionWithUsers extends TransactionBackend {
-  fromUserName: string;
-  toUserName: string;
-  amountNumber: number;
-}
-
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = React.useState<TransactionWithUsers[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [selectedTransaction, setSelectedTransaction] = React.useState<TransactionWithUsers | null>(null);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [windowWidth, setWindowWidth] = React.useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 1200
-  );
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const mountedRef = useRef(true);
 
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  React.useEffect(() => {
-    let isMounted = true;
-
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        const response = await TransactionsService.getAll();
-        const data: TransactionBackend[] = response;
-        console.log("Transações recebidas do backend:", data);
-        const enriched: TransactionWithUsers[] = await Promise.all(
-          data.map(async (tx) => {
-            const fromUserResp = await UserService.getById(tx.fromUserId);
-            const toUserResp = await UserService.getById(tx.toUserId);
-
-            return {
-              ...tx,
-              fromUserName: fromUserResp?.data?.name ?? "—",
-              toUserName: toUserResp?.data?.name ?? "—",
-              amountNumber: Number(tx.amount),
-            };
-          })
-        );
-
-        if (isMounted) setTransactions(enriched);
-      } catch (error) {
-        console.error("Erro ao buscar transações", error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
+  useEffect(() => {
+    mountedRef.current = true;
     fetchTransactions();
-    return () => { isMounted = false; };
+
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
-  const handleView = (transaction: TransactionWithUsers) => {
-    setSelectedTransaction(transaction);
-    setModalOpen(true);
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await TransactionsService.getAll();
+
+      // ✅ mantém os valores exatamente como vêm da API
+      const parsed = response.map((tx: any) => ({ ...tx }));
+
+      if (mountedRef.current) {
+        setTransactions(parsed);
+      }
+    } catch (error: any) {
+      console.error("Erro ao buscar transações", error);
+      if (mountedRef.current) {
+        setErrorMessage(
+          error.response?.status === 404
+            ? "Nenhuma transação encontrada."
+            : "Erro ao buscar transações."
+        );
+      }
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   };
 
-  const allColumns: GridColDef<TransactionWithUsers>[] = [
+  const handleView = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedTransaction(null);
+  };
+
+  const formatDate = (value?: string) => {
+    if (!value) return "—";
+    return new Date(value).toLocaleString();
+  };
+
+  const allColumns: GridColDef<Transaction>[] = [
     { field: "id", headerName: "ID", flex: 0.3, minWidth: 50 },
-    { field: "fromUserName", headerName: "De", flex: 1, minWidth: 150 },
-    { field: "toUserName", headerName: "Para", flex: 1, minWidth: 150 },
-    { 
-      field: "amountNumber", 
-      headerName: "Valor", 
-      flex: 0.5, 
-      minWidth: 100,
-      valueGetter: (params: any) => `Kz ${(params.row.amountNumber || 0).toFixed(2)}` 
+    {
+      field: "fromUserId",
+      headerName: "De (Usuário)",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "toUserId",
+      headerName: "Para (Usuário)",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "amount",
+      headerName: "Valor",
+      flex: 0.6,
+      minWidth: 120,
+      renderCell: (params: GridRenderCellParams<Transaction>) => (
+        <>{params.value}</>
+      ),
     },
     { field: "type", headerName: "Tipo", flex: 0.5, minWidth: 120 },
-    { 
-      field: "createdAt", 
-      headerName: "Data", 
-      flex: 0.7, 
+    {
+      field: "createdAt",
+      headerName: "Data",
+      flex: 0.8,
       minWidth: 150,
-      valueGetter: (params: any) => params.row.createdAt ? new Date(params.row.createdAt).toLocaleString() : "—"
+      renderCell: (params: GridRenderCellParams<Transaction>) => (
+        <>{formatDate(params.value as string)}</>
+      ),
     },
     {
       field: "actions",
       headerName: "Visualizar",
-      flex: 0.5,
-      minWidth: 100,
+      flex: 0.4,
+      minWidth: 80,
       sortable: false,
       filterable: false,
-      renderCell: (params: any) => (
+      renderCell: (params: GridRenderCellParams<Transaction>) => (
         <IconButton onClick={() => handleView(params.row)}>
           <VisibilityIcon />
         </IconButton>
@@ -120,43 +130,96 @@ export default function TransactionsPage() {
     },
   ];
 
-  const columnsToShow = allColumns.filter((col, index) => {
-    const breakpoints = [0, 600, 700, 800, 900, 1000, 1100];
-    return windowWidth > (breakpoints[index] ?? 0);
-  });
-
   return (
     <Box p={3} sx={{ width: "100%" }}>
-      <Typography variant="h5" fontWeight="bold" mb={2}>Transações</Typography>
-      <DataGrid<TransactionWithUsers>
-        rows={transactions}
-        columns={columnsToShow}
-        loading={loading}
-        getRowId={(row) => row.id}
-        disableRowSelectionOnClick
-        autoHeight
-      />
+      <Typography variant="h5" fontWeight="bold" mb={2}>
+        Histórico de transações
+      </Typography>
 
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
+      {loading ? (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <DataGrid
+          rows={transactions}
+          columns={allColumns}
+          getRowId={(row) => row.id}
+          disableRowSelectionOnClick
+          autoHeight
+          pageSizeOptions={[5, 10, 20]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10, page: 0 } },
+          }}
+          localeText={{
+            noRowsLabel: "Nenhuma transação encontrada",
+          }}
+        />
+      )}
+
+      {/* Modal de detalhes */}
+      <Dialog
+        open={!!selectedTransaction}
+        onClose={handleCloseDialog}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Detalhes da Transação</DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           {selectedTransaction && (
-            <Stack spacing={1}>
-              <Typography><strong>ID:</strong> {selectedTransaction.id}</Typography>
-              <Divider />
-              <Typography><strong>De:</strong> {selectedTransaction.fromUserName}</Typography>
-              <Typography><strong>Para:</strong> {selectedTransaction.toUserName}</Typography>
-              <Divider />
-              <Typography><strong>Valor:</strong> Kz {selectedTransaction.amountNumber.toFixed(2)}</Typography>
-              <Typography><strong>Tipo:</strong> {selectedTransaction.type}</Typography>
-              <Divider />
-              <Typography><strong>Data:</strong> {new Date(selectedTransaction.createdAt).toLocaleString()}</Typography>
-              <Divider />
-              <Typography><strong>Descrição:</strong> {selectedTransaction.description}</Typography>
-            </Stack>
+            <Grid container spacing={2}>
+              <div>
+                <Typography fontWeight="bold">ID:</Typography>
+                <Typography>{selectedTransaction.id}</Typography>
+              </div>
+
+              <div>
+                <Typography fontWeight="bold">Tipo:</Typography>
+                <Typography>{selectedTransaction.type}</Typography>
+              </div>
+
+              <div>
+                <Typography fontWeight="bold">De (Usuário):</Typography>
+                <Typography>{selectedTransaction.fromUserId}</Typography>
+              </div>
+
+              <div>
+                <Typography fontWeight="bold">Para (Usuário):</Typography>
+                <Typography>{selectedTransaction.toUserId}</Typography>
+              </div>
+
+              <div>
+                <Typography fontWeight="bold">Valor:</Typography>
+                <Typography>{selectedTransaction.amount}</Typography>
+              </div>
+
+              <div>
+                <Typography fontWeight="bold">Data:</Typography>
+                <Typography>{formatDate(selectedTransaction.createdAt)}</Typography>
+              </div>
+            </Grid>
           )}
         </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Fechar
+          </Button>
+        </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={4000}
+        onClose={() => setErrorMessage(null)}
+      >
+        <Alert
+          severity="error"
+          onClose={() => setErrorMessage(null)}
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

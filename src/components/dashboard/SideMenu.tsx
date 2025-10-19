@@ -38,7 +38,6 @@ export default function SideMenu() {
 
   if (!mounted) return null;
 
-  // função para definir a cor do tipo de usuário
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'ADMIN':
@@ -87,7 +86,6 @@ export default function SideMenu() {
           p: 1,
         }}
       >
-        {/* Badge mostrando o tipo de usuário */}
           {user?.role && (
             <Chip
               label={user.role}

@@ -21,7 +21,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 import { ReservationService } from "@/services/ReservationService";
-import { UserService } from "@/services/UserService";
 import { ServiceService } from "@/services/ServicesService";
 import { Reservation, Service, User } from "@/types/ApiResponse";
 
@@ -56,14 +55,12 @@ export default function ReservationsPage() {
       const data = await ReservationService.getAll();
 
       const enriched: ReservationWithNames[] = await Promise.all(
-        data.data.map(async (resv: Reservation) => {
-          const clientResp = await UserService.getById(Number(resv.id)); 
-          const serviceResp = await ServiceService.getById(Number(resv.id));
+        data.map(async (resv: Reservation) => {
 
           return {
             ...resv,
-            clientName: clientResp.data?.[0]?.name ?? "Desconhecido",
-            serviceName: serviceResp.data?.[0]?.name ?? "Desconhecido",
+            clientName: resv?.clientName ?? "Desconhecido",
+            serviceName: resv?.serviceName ?? "Desconhecido",
           };
         })
       );
@@ -131,29 +128,28 @@ export default function ReservationsPage() {
   };
 
   const columns: GridColDef<ReservationWithNames>[] = [
-    { field: "id", headerName: "ID", flex: 0.3 },
-    { field: "clientName", headerName: "Cliente", flex: 1 },
-    { field: "serviceName", headerName: "Serviço", flex: 1 },
-    {
-      field: "pricePaid",
-      headerName: "Preço Pago",
-      flex: 0.5,
-      valueFormatter: ({ value }) => `KZ ${Number(value || 0).toFixed(2)}`,
-    }
-    ,
-    { field: "status", headerName: "Status", flex: 0.6 },
-    {
-      field: "actions",
-      headerName: "Ações",
-      flex: 0.5,
-      renderCell: (params) =>
-        params.row.status !== "CANCELLED" && (
-          <Button variant="outlined" color="error" onClick={() => handleCancel(params.row.id)}>
-            Cancelar
-          </Button>
-        ),
-    },
-  ];
+  { field: "id", headerName: "ID", flex: 0.3 },
+  { field: "clientName", headerName: "Cliente", flex: 1 },
+  { field: "serviceName", headerName: "Serviço", flex: 1 },
+  { field: "pricePaid", headerName: "Preço (AOA)", flex: 0.5 },
+  { field: "status", headerName: "Status", flex: 0.6 },
+  {
+    field: "actions",
+    headerName: "Ações",
+    flex: 0.5,
+    renderCell: (params) =>
+      params.row.status !== "CANCELED" && (
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => handleCancel(params.row.id)}
+        >
+          Cancelar
+        </Button>
+      ),
+  },
+];
+
 
   return (
     <Box p={3}>

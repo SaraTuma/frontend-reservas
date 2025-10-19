@@ -25,8 +25,11 @@ export interface Service {
 
 export interface Reservation {
   id: string;
+  clientId:number;
+  serviceId: number;
   clientName: string;
   serviceName: string;
+  pricePaid: number;
   status: string;
 }
 
