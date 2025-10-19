@@ -7,15 +7,31 @@ import ServiceTable from "./components/ServiceTable";
 import ServiceDialog from "./components/ServiceDialog";
 import { ServiceService } from "@/services/ServicesService";
 
+export interface Service {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  providerId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type SnackbarType = {
+  open: boolean;
+  message: string;
+  severity: "success" | "error";
+};
+
 export default function ServicesPage() {
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<any | null>(null);
-  const [snackbar, setSnackbar] = useState({
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [snackbar, setSnackbar] = useState<SnackbarType>({
     open: false,
     message: "",
-    severity: "success" as "success" | "error",
+    severity: "success",
   });
 
   const fetchServices = async () => {
@@ -44,12 +60,12 @@ export default function ServicesPage() {
     setDialogOpen(true);
   };
 
-  const handleEdit = (service: any) => {
+  const handleEdit = (service: Service) => {
     setSelectedService(service);
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (confirm("Tem certeza que deseja excluir este serviço?")) {
       try {
         await ServiceService.delete(id);
@@ -61,7 +77,7 @@ export default function ServicesPage() {
     }
   };
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: Omit<Service, "id" | "createdAt" | "updatedAt">) => {
     try {
       if (selectedService) {
         await ServiceService.update(selectedService.id, data);

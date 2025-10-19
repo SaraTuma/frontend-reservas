@@ -8,7 +8,7 @@ interface Props {
   services: any[];
   loading: boolean;
   onEdit: (service: any) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export default function ServiceTable({ services, loading, onEdit, onDelete }: Props) {

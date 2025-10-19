@@ -11,12 +11,12 @@ export class ServiceService {
     return response.data;
   }
 
-  static async update(id: string, data: any) {
+  static async update(id: number, data: any) {
     const response = await privateApi.put(`/api/services/${id}`, data);
     return response.data;
   }
 
-  static async delete(id: string) {
+  static async delete(id: number) {
     const response = await privateApi.delete(`/api/services/${id}`);
     return response.data;
   }

@@ -89,9 +89,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       const response = await AuthService.register(data.email, data.password, data.name, data.nif, "CLIENT")
       showToast("success", response.message || "Cadastro realizado com sucesso!");
       router.push('/login')
-    } catch (error: any) {
-      showToast("error", error.response?.message || "Erro ao criar conta.");
-    }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showToast("error", error.message || "Erro ao criar conta.");
+      } else {
+        console.error("Ocorreu um erro desconhecido", error);
+      }
+    } 
+   
   };
 
   return (

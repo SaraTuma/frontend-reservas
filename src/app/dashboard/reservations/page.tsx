@@ -17,113 +17,153 @@ import {
   Autocomplete,
 } from "@mui/material";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 import { ReservationService } from "@/services/ReservationService";
 import { UserService } from "@/services/UserService";
 import { ServiceService } from "@/services/ServicesService";
+import { Reservation, Service, User } from "@/types/ApiResponse";
 
 export default function ReservationsPage() {
-  const [reservations, setReservations] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
 
   const [clientQuery, setClientQuery] = useState("");
-  const [clients, setClients] = useState<any[]>([]);
-  const [selectedClient, setSelectedClient] = useState<any | null>(null);
+  const [clients, setClients] = useState<User[]>([]);
 
   const [serviceQuery, setServiceQuery] = useState("");
-  const [services, setServices] = useState<any[]>([]);
-  const [selectedService, setSelectedService] = useState<any | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
-
-  const fetchReservations = async () => {
-    setLoading(true);
-    try {
-      const data = await ReservationService.getAll();
-      setReservations(data);
-    } catch {
-      showSnackbar("Erro ao carregar reservas.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbar({ open: true, message, severity });
   };
 
+  // -----------------------------
+  // Função centralizada para buscar reservas
+  // -----------------------------
+  const fetchReservations = async () => {
+    let isMounted = true;
+    setLoading(true);
+    try {
+      const data = await ReservationService.getAll();
+      if (isMounted) setReservations(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) showSnackbar(`Erro ao carregar reservas: ${error.message}`, "error");
+      else showSnackbar("Erro ao carregar reservas.", "error");
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+    return () => { isMounted = false; };
+  };
+
+  // -----------------------------
+  // Fetch inicial
+  // -----------------------------
   useEffect(() => {
     fetchReservations();
   }, []);
 
+  // -----------------------------
+  // Filtro de clientes
+  // -----------------------------
   useEffect(() => {
+    let isMounted = true;
     const timeout = setTimeout(async () => {
+      if (!isMounted) return;
       if (clientQuery.trim() !== "") {
         const allUsers = await UserService.getAll();
-        const filtered = allUsers.filter((u: any) =>
+        const filtered = allUsers.filter((u: User) =>
           u.name.toLowerCase().includes(clientQuery.toLowerCase())
         );
-        setClients(filtered);
+        if (isMounted) setClients(filtered);
       }
     }, 400);
-    return () => clearTimeout(timeout);
+
+    return () => {
+      clearTimeout(timeout);
+      isMounted = false;
+    };
   }, [clientQuery]);
 
+  // -----------------------------
+  // Filtro de serviços
+  // -----------------------------
   useEffect(() => {
+    let isMounted = true;
     const timeout = setTimeout(async () => {
+      if (!isMounted) return;
       if (serviceQuery.trim() !== "") {
         const allServices = await ServiceService.getAll();
-        const filtered = allServices.filter((s: any) =>
+        const filtered = allServices.filter((s: Service) =>
           s.name.toLowerCase().includes(serviceQuery.toLowerCase())
         );
-        setServices(filtered);
+        if (isMounted) setServices(filtered);
       }
     }, 400);
-    return () => clearTimeout(timeout);
+
+    return () => {
+      clearTimeout(timeout);
+      isMounted = false;
+    };
   }, [serviceQuery]);
 
+  // -----------------------------
+  // Criar reserva
+  // -----------------------------
   const handleCreateReservation = async () => {
-    if (!selectedClient || !selectedService) {
+    if (!selectedService) {
       showSnackbar("Selecione um cliente e um serviço.", "error");
       return;
     }
 
     setSubmitting(true);
     try {
-      await ReservationService.create({
-        clientId: selectedClient.id,
-        serviceId: selectedService.id,
-      });
+      await ReservationService.create({ serviceId: selectedService.id });
       showSnackbar("Reserva criada com sucesso!", "success");
       setDialogOpen(false);
-      fetchReservations();
-    } catch {
-      showSnackbar("Erro ao criar reserva.", "error");
+
+      // Atualiza a tabela
+      await fetchReservations();
+    } catch (error: unknown) {
+      if (error instanceof Error) showSnackbar(`Erro ao criar reserva: ${error.message}`, "error");
+      else showSnackbar("Erro ao criar reserva.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
+  // -----------------------------
+  // Cancelar reserva
+  // -----------------------------
   const handleCancel = async (id: string) => {
     if (confirm("Deseja realmente cancelar esta reserva?")) {
       try {
         await ReservationService.cancel(id);
         showSnackbar("Reserva cancelada.", "success");
-        fetchReservations();
-      } catch {
-        showSnackbar("Erro ao cancelar reserva.", "error");
+
+        // Atualiza a tabela
+        await fetchReservations();
+      } catch (error: unknown) {
+        if (error instanceof Error) showSnackbar(`Erro ao cancelar reserva: ${error.message}`, "error");
+        else showSnackbar("Erro ao cancelar reserva.", "error");
       }
     }
   };
 
-  const columns: GridColDef[] = [
+  // -----------------------------
+  // Colunas da tabela
+  // -----------------------------
+  const columns: GridColDef<Reservation>[] = [
     { field: "id", headerName: "ID", flex: 0.3 },
     { field: "clientName", headerName: "Cliente", flex: 1 },
     { field: "serviceName", headerName: "Serviço", flex: 1 },
@@ -148,14 +188,8 @@ export default function ReservationsPage() {
   return (
     <Box p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5" fontWeight="bold">
-          Reservas
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddCircleRoundedIcon />}
-          onClick={() => setDialogOpen(true)}
-        >
+        <Typography variant="h5" fontWeight="bold">Reservas</Typography>
+        <Button variant="contained" startIcon={<AddCircleRoundedIcon />} onClick={() => setDialogOpen(true)}>
           Nova Reserva
         </Button>
       </Stack>
@@ -173,31 +207,51 @@ export default function ReservationsPage() {
         <DialogTitle>Criar Reserva</DialogTitle>
         <DialogContent>
           <Autocomplete
-            options={clients}
-            getOptionLabel={(option) => option.name}
-            onInputChange={(_, value) => setClientQuery(value)}
-            onChange={(_, value) => setSelectedClient(value)}
-            renderInput={(params) => (
-              <TextField {...params} label="Cliente" margin="dense" fullWidth />
-            )}
-          />
-          <Autocomplete
             options={services}
             getOptionLabel={(option) => option.name}
-            onInputChange={(_, value) => setServiceQuery(value)}
+            value={selectedService}
             onChange={(_, value) => setSelectedService(value)}
+            inputValue={serviceQuery}
+            onInputChange={(_, value) => setServiceQuery(value)}
+            loading={services.length === 0 && serviceQuery.trim() !== ""}
+            noOptionsText="Nenhum serviço encontrado"
+            clearOnEscape
+            sx={{ width: "100%", mt: 1, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
             renderInput={(params) => (
-              <TextField {...params} label="Serviço" margin="dense" fullWidth />
+              <TextField
+                {...params}
+                label="Serviço"
+                placeholder="Digite o nome do serviço"
+                margin="dense"
+                fullWidth
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <Box sx={{ display: "flex", alignItems: "center", mr: 1 }}>
+                      <SearchIcon color="action" />
+                    </Box>
+                  ),
+                  endAdornment: (
+                    <>
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <Box component="li" {...props} sx={{ display: "flex", flexDirection: "column" }}>
+                <Typography variant="body2">{option.name}</Typography>
+                {option.description && (
+                  <Typography variant="caption" color="text.secondary">{option.description}</Typography>
+                )}
+              </Box>
             )}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button
-            variant="contained"
-            onClick={handleCreateReservation}
-            disabled={submitting}
-          >
+          <Button variant="contained" onClick={handleCreateReservation} disabled={submitting}>
             {submitting ? <CircularProgress size={24} /> : "Criar"}
           </Button>
         </DialogActions>
@@ -209,9 +263,7 @@ export default function ReservationsPage() {
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={snackbar.severity} variant="filled">
-          {snackbar.message}
-        </Alert>
+        <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );

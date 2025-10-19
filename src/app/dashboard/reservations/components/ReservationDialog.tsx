@@ -9,15 +9,21 @@ import {
   Stack,
 } from "@mui/material";
 
+interface ReservationData {
+  clientId: string;
+  serviceId: string;
+  date: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  reservation?: any | null;
+  onSave: (data: ReservationData) => void;
+  reservation?: ReservationData | null;
 }
 
 export default function ReservationDialog({ open, onClose, onSave, reservation }: Props) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ReservationData>({
     clientId: reservation?.clientId || "",
     serviceId: reservation?.serviceId || "",
     date: reservation?.date || "",
