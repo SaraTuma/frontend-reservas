@@ -1,6 +1,5 @@
 'use client';
 import * as React from 'react';
-import axios from 'axios';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MuiCard from '@mui/material/Card';
@@ -15,6 +14,8 @@ import { styled } from '@mui/material/styles';
 import { SitemarkIcon } from './CustomIcons';
 import ForgotPassword from './ForgotPassword';
 import { useToast } from '../ToastProvider';
+import { AuthService } from '@/services/AuthService';
+import { useRouter } from "next/navigation"
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -41,6 +42,7 @@ export default function SignInCard() {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const router = useRouter()
 
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -80,22 +82,15 @@ export default function SignInCard() {
     const emailOrNif = data.get('email') as string;
     const password = data.get('password') as string;
 
+
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
-        emailOrNif,
-        password,
-      });
-
+      console.log("Submitting login for: ", emailOrNif);
+      console.log("Password: ", password);
+      const response = await AuthService.login(emailOrNif, password)
       if (response.status === 200) {
-        const { token, data: userData } = response.data;
-
-        // 🔒 Guardar token e dados do usuário
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData.user));
-
         showToast("success", "Login efetuado com sucesso!");
-        window.location.href = '/dashboard';
+        router.push('/dashboard')
       }
     } catch (error: any) {
       const message =

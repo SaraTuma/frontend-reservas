@@ -12,7 +12,6 @@ export default function SignInSide(props: { disableCustomTheme?: boolean }) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
-      {/* <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} /> */}
       <Stack
         direction="column"
         component="main"
