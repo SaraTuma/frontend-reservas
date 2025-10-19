@@ -6,10 +6,11 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import SelectContent from './SelectContent';
 import MenuContent from './MenuContent';
-import CardAlert from './CardAlert';
 import OptionsMenu from './OptionsMenu';
+import { getUser } from '@/utils/token';
+import Image from "next/image";
+import { useEffect, useState } from 'react';
 
 const drawerWidth = 240;
 
@@ -25,6 +26,15 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const u = getUser();
+    setUser(u);
+  }, []);
+   if (!mounted) return null;
   return (
     <Drawer
       variant="permanent"
@@ -42,8 +52,15 @@ export default function SideMenu() {
           p: 1.5,
         }}
       >
-        {/* <SelectContent /> */}
-        AOServices
+         <Box sx={{ display: { xs: 'flex'} }}>
+          <Image
+            src="/aoservices.png"
+            alt="Logo"
+            width={200}
+            height={50}
+            style={{ borderRadius: 12 }}
+          />
+      </Box>
       </Box>
       <Divider />
       <Box
@@ -55,7 +72,6 @@ export default function SideMenu() {
         }}
       >
         <MenuContent />
-        {/* <CardAlert /> */}
       </Box>
       <Stack
         direction="row"
@@ -69,16 +85,16 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="small"
-          alt="Riley Carter"
+          alt={user?.name}
           src="/static/images/avatar/7.jpg"
           sx={{ width: 36, height: 36 }}
         />
         <Box sx={{ mr: 'auto' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            Riley Carter
+            {user?.name}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            riley@email.com
+            {user?.email}
           </Typography>
         </Box>
         <OptionsMenu />

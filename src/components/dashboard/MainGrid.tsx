@@ -1,80 +1,94 @@
-import * as React from 'react';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Copyright from '../internals/components/Copyright';
-import ChartUserByCountry from './ChartUserByCountry';
-import CustomizedTreeView from './CustomizedTreeView';
-import CustomizedDataGrid from './CustomizedDataGrid';
-import HighlightedCard from './HighlightedCard';
-import PageViewsBarChart from './PageViewsBarChart';
-import SessionsChart from './SessionsChart';
-import StatCard, { StatCardProps } from './StatCard';
+"use client";
 
-const data: StatCardProps[] = [
-  {
-    title: 'Usuários',
-    value: '14k',
-    interval: 'Nos últimos 30 dias',
-    trend: 'up',
-    data: [
-      200, 24, 220, 260, 240, 380, 100, 240, 280, 240, 300, 340, 320, 360, 340, 380,
-      360, 400, 380, 420, 400, 640, 340, 460, 440, 480, 460, 600, 880, 920,
-    ],
-  },
-  {
-    title: 'Serviços',
-    value: '325',
-    interval: 'Nos últimos 30 dias',
-    trend: 'down',
-    data: [
-      1640, 1250, 970, 1130, 1050, 900, 720, 1080, 900, 450, 920, 820, 840, 600, 820,
-      780, 800, 760, 380, 740, 660, 620, 840, 500, 520, 480, 400, 360, 300, 220,
-    ],
-  },
-  {
-    title: 'Reservas',
-    value: '200k',
-    interval: 'Nos últimos 30 dias',
-    trend: 'neutral',
-    data: [
-      500, 400, 510, 530, 520, 600, 530, 520, 510, 730, 520, 510, 530, 620, 510, 530,
-      520, 410, 530, 520, 610, 530, 520, 610, 530, 420, 510, 430, 520, 510,
-    ],
-  },
-];
+import * as React from "react";
+import { useEffect, useState } from "react";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { Stack } from "@mui/material";
+import Copyright from "../internals/components/Copyright";
+import HighlightedCard from "./HighlightedCard";
+import StatCard, { StatCardProps } from "./StatCard";
+import { StatsService } from "@/services/StatsService";
 
 export default function MainGrid() {
+  const [data, setData] = useState<StatCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = async () => {
+    try {
+      const stats = await StatsService.getCounts();
+
+      const formatted: StatCardProps[] = [
+        {
+          title: "Usuários",
+          value: stats.users?.toString() ?? "0",
+          interval: "Total cadastrado",
+          trend: "neutral",
+        },
+        {
+          title: "Serviços",
+          value: stats.services?.toString() ?? "0",
+          interval: "Total ativo",
+          trend: "neutral",
+        },
+        {
+          title: "Reservas",
+          value: stats.reservations?.toString() ?? "0",
+          interval: "Total registrado",
+          trend: "neutral",
+        },
+      ];
+
+      setData(formatted);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
   return (
-    <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
-      {/* cards */}
+    <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         Visão geral
       </Typography>
-      <Grid
-        container
+
+      <Stack
         spacing={2}
-        columns={12}
-        sx={{ mb: (theme) => theme.spacing(2) }}
+        sx={{
+          justifyContent: "space-between",
+          height: "85vh",
+        }}
       >
-        {data.map((card, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, lg: 3 }}>
-            <StatCard {...card} />
-          </Grid>
-        ))}
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <HighlightedCard />
+        <Grid
+          container
+          spacing={2}
+          columns={12}
+          sx={{ mb: (theme) => theme.spacing(2) }}
+        >
+          {loading ? (
+            <Typography sx={{ ml: 2 , mt: 4}}>Carregando estatísticas...</Typography>
+          ) : (
+            <>
+              {data.map((card, index) => (
+                <Grid key={index} size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <StatCard {...card} />
+                </Grid>
+              ))}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                <HighlightedCard />
+              </Grid>
+            </>
+          )}
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SessionsChart />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <PageViewsBarChart />
-        </Grid>
-      </Grid>
-     
-      <Copyright sx={{ my: 4 }} />
+
+        <Copyright sx={{ my: 4 }} />
+      </Stack>
     </Box>
   );
 }

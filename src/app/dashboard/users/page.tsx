@@ -13,7 +13,7 @@ import { getUser } from "@/utils/token";
 
 export default function UsersPage() {
   const router = useRouter();
-  const  user  = getUser(); // exemplo: { id, name, role }
+  const  user  = getUser();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

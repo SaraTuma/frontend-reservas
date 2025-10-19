@@ -15,12 +15,12 @@ export const getToken = () => {
   return localStorage.getItem(TOKEN);
 };
 
-
-
 export const getUser = () => {
-    const data = localStorage.getItem(USER);
-    return data ? JSON.parse(data) : null;
+  if (typeof window === "undefined") return null;
+  const data = localStorage.getItem(USER);
+  return data ? JSON.parse(data) : null;
 };
+
 
 export const removeTokens = () => {
     localStorage.removeItem(TOKEN);

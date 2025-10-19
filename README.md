@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend – [Nome do Projeto]
 
-## Getting Started
+Este repositório contém o frontend da aplicação [Nome do Projeto], desenvolvido com **Next.js** e **Material UI**, responsável por fornecer a interface de usuário para gerenciamento de usuários, serviços, reservas e transações.
 
-First, run the development server:
+O frontend consome a API do backend hospedado no Render.
+
+---
+
+## Tecnologias utilizadas
+
+- Next.js 13+ (App Router)
+- React
+- Material UI (MUI)
+- Axios (para requisições HTTP)
+- TypeScript (opcional)
+- Zustand / Context API (ou outro gerenciamento de estado, se usado)
+
+---
+
+## Funcionalidades principais
+
+- Autenticação de usuários (login/logout)
+- Dashboard com estatísticas (usuários, serviços, reservas)
+- Listagem, criação, edição e exclusão de:
+  - Usuários
+  - Serviços
+  - Reservas
+  - Transações
+- Pesquisa dinâmica de clientes e serviços ao criar reservas
+- Modais para informações de conta e confirmações
+- Responsividade para dispositivos móveis
+
+---
+
+## Rodando localmente
+
+1. Clone o repositório:
 
 ```bash
+git clone [link-do-repositório-frontend]
+cd frontend
+npm install
+
+NEXT_PUBLIC_API_URL=https://[seu-backend].onrender.com
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Estrutura do projeto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+src/
+├── app/                # Páginas e rotas
+│   ├── dashboard/      # Dashboard e telas internas
+│   ├── auth/           # Login e registro
+│   └── ...             # Outras rotas
+├── components/         # Componentes reutilizáveis
+├── services/           # Serviços para chamadas à API
+├── hooks/              # Hooks customizados
+├── types/              # Tipos TypeScript
+└── utils/              # Funções utilitárias
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Deploy
 
-## Learn More
+O frontend está sendo preparado para deploy na Vercel.
+Após a configuração, você poderá acessar a aplicação em:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[em deploy...]

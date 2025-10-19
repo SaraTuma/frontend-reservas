@@ -4,9 +4,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
-import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
-import { SitemarkIcon } from './CustomIcons';
+import Image from "next/image";
 
 const items = [
   {
@@ -40,7 +39,13 @@ export default function Content() {
       }}
     >
       <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
-        <SitemarkIcon />
+       <Image
+          src="/aoservices.png"
+          alt="Logo"
+          width={200}
+          height={50}
+          style={{ borderRadius: 12 }}
+        />
         
       </Box>
 

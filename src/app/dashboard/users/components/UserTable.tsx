@@ -25,9 +25,9 @@ export default function UserTable({ users, loading, onEdit, onDelete }: Props) {
       flex: 0.5,
       renderCell: (params) => (
         <>
-          <IconButton color="primary" onClick={() => onEdit(params.row)}>
+          {/* <IconButton color="primary" onClick={() => onEdit(params.row)}>
             <EditRoundedIcon />
-          </IconButton>
+          </IconButton> */}
           <IconButton color="error" onClick={() => onDelete(params.row.id)}>
             <DeleteRoundedIcon />
           </IconButton>

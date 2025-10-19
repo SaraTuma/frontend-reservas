@@ -33,7 +33,7 @@ export function useAuth({ requireAuth = false }: UseAuthRedirectOptions) {
     setUser(userData);
   };
 
-  const logout = () => {
+  const logoutGoToLogin = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);
@@ -41,5 +41,12 @@ export function useAuth({ requireAuth = false }: UseAuthRedirectOptions) {
     router.replace('/login');
   };
 
-  return { user, token, login, logout };
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+  };
+
+  return { user, token, login, logout , logoutGoToLogin};
 }

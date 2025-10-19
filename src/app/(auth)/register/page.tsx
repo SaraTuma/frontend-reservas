@@ -2,9 +2,7 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import CssBaseline from "@mui/material/CssBaseline";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -14,14 +12,14 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "../../../shared-theme/AppTheme";
-import ColorModeSelect from "../../../shared-theme/ColorModeSelect";
-import { SitemarkIcon } from "../../../components/auth/CustomIcons";
-import axios from "axios";
+import Image from "next/image";
+import { useRouter } from "next/navigation"
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ToastProvider";
+import { AuthService } from "@/services/AuthService";
 
 const schema = z.object({
   name: z.string().min(1, "O nome é obrigatório."),
@@ -75,6 +73,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
+  const router = useRouter()
   const { showToast } = useToast();
   const {
     register,
@@ -85,12 +84,13 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   });
 
   const onSubmit = async (data: FormData) => {
+     
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/register", data);
-      showToast("success", res.data.message || "Cadastro realizado com sucesso!");
-      window.location.href = "/login";
+      const response = await AuthService.register(data.email, data.password, data.name, data.nif, "CLIENT")
+      showToast("success", response.message || "Cadastro realizado com sucesso!");
+      router.push('/login')
     } catch (error: any) {
-      showToast("error", error.response?.data?.message || "Erro ao criar conta.");
+      showToast("error", error.response?.message || "Erro ao criar conta.");
     }
   };
 
@@ -99,7 +99,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       <CssBaseline enableColorScheme />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <SitemarkIcon />
+           <Box sx={{ display: { xs: 'flex'} }}>
+          <Image
+            src="/aoservices.png"
+            alt="Logo"
+            width={200}
+            height={50}
+            style={{ borderRadius: 12 }}
+          />
+      </Box>
           <Typography
             component="h1"
             variant="h4"

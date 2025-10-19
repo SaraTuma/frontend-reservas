@@ -14,6 +14,7 @@ import {
   datePickersCustomizations,
   treeViewCustomizations,
 } from "@/theme/customizations";
+import { getUser } from "@/utils/token";
 
 
 const xThemeComponents = {
@@ -28,14 +29,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  
   return (
     <AppTheme themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
       <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar fixa */}
         <SideMenu />
-
-        {/* Conteúdo principal */}
         <Box
           component="main"
           sx={(theme) => ({
@@ -48,15 +47,13 @@ export default function DashboardLayout({
             overflow: "auto",
           })}
         >
-          {/* Navbar fixa no topo */}
           <AppNavbar />
 
-          {/* Conteúdo dinâmico (aqui entram as páginas /dashboard/*) */}
           <Stack
             sx={{
               flexGrow: 1,
-              
               overflowY: "auto",
+              p:2
             }}
           >
             {children}

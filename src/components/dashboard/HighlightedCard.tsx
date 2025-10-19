@@ -1,3 +1,4 @@
+"use client";
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -7,10 +8,12 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import { useRouter } from "next/navigation";
 
 export default function HighlightedCard() {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const router = useRouter();
 
   return (
     <Card sx={{ height: '100%' }}>
@@ -33,6 +36,7 @@ export default function HighlightedCard() {
           color="primary"
           endIcon={<ChevronRightRoundedIcon />}
           fullWidth={isSmallScreen}
+          onClick={() => {router.push("/dashboard/transactions")}}
         >
           Obtenha informações
         </Button>

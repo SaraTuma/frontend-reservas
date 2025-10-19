@@ -11,11 +11,11 @@ import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import { SitemarkIcon } from './CustomIcons';
 import ForgotPassword from './ForgotPassword';
 import { useToast } from '../ToastProvider';
 import { AuthService } from '@/services/AuthService';
 import { useRouter } from "next/navigation"
+import Image from "next/image";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -104,7 +104,13 @@ export default function SignInCard() {
   return (
     <Card variant="outlined">
       <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-        <SitemarkIcon />
+        <Image
+          src="/aoservices.png"
+          alt="Logo"
+          width={200}
+          height={50}
+          style={{ borderRadius: 12 }}
+        />
       </Box>
 
       <Typography
