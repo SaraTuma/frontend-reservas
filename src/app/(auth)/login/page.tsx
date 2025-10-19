@@ -3,7 +3,6 @@ import * as React from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import Stack from "@mui/material/Stack";
 import AppTheme from "../../../shared-theme/AppTheme";
-import ColorModeSelect from "../../../shared-theme/ColorModeSelect";
 import SignInCard from "../../../components/auth/SignInCard";
 import Content from "../../../components/auth/Content";
 
@@ -51,7 +50,6 @@ export default function SignInSide(props: { disableCustomTheme?: boolean }) {
             maxWidth: "1200px",
           }}
         >
-          {/* Oculta o texto lateral em telas pequenas */}
           <Stack
             sx={{
               display: { xs: "none", md: "flex" },

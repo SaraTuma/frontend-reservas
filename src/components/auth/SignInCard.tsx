@@ -85,8 +85,6 @@ export default function SignInCard() {
 
     try {
       setLoading(true);
-      console.log("Submitting login for: ", emailOrNif);
-      console.log("Password: ", password);
       const response = await AuthService.login(emailOrNif, password)
       if (response.status === 200) {
         showToast("success", "Login efetuado com sucesso!");

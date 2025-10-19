@@ -38,7 +38,6 @@ export default function ServicesPage() {
     setLoading(true);
     try {
       const data = await ServiceService.getAll();
-      console.log("SERVICES RESPONSE:", data);
       setServices(data);
     } catch {
       showSnackbar("Erro ao carregar serviços.", "error");

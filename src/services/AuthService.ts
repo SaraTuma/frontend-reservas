@@ -12,7 +12,6 @@ export class AuthService {
       }
     );
     const { token, data } = response.data;
-    console.log("LOGIN RESPONSE: ", response.data);
     saveTokens({ token, user: JSON.stringify(data.user) });
     return response.data;
   }

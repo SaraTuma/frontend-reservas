@@ -3,18 +3,20 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Stack from "@mui/material/Stack";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
+import {
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
@@ -23,10 +25,12 @@ import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import HelpRoundedIcon from "@mui/icons-material/HelpRounded";
+import { useEffect, useState } from "react";
+import { getUser } from "@/utils/token";
 
 const mainListItems = [
   { text: "Início", icon: <HomeRoundedIcon />, href: "/dashboard" },
-  { text: "Usuários", icon: <PeopleRoundedIcon />, href: "/dashboard/users" },
+  { text: "Usuários", icon: <PeopleRoundedIcon />, href: "/dashboard/users", role: "ADMIN" }, // 👈 restringido
   { text: "Serviços", icon: <AssignmentRoundedIcon />, href: "/dashboard/services" },
   { text: "Reservas", icon: <AnalyticsRoundedIcon />, href: "/dashboard/reservations" },
   { text: "Histórico", icon: <AnalyticsRoundedIcon />, href: "/dashboard/transactions" },
@@ -43,6 +47,15 @@ export default function MenuContent() {
   const [openModal, setOpenModal] = React.useState(false);
   const [modalContent, setModalContent] = React.useState("");
 
+  const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+  
+    useEffect(() => {
+      setMounted(true);
+      const u = getUser();
+      setUser(u);
+    }, []);
+
   const handleOpenModal = (content: string) => {
     setModalContent(content);
     setOpenModal(true);
@@ -50,10 +63,15 @@ export default function MenuContent() {
 
   const handleCloseModal = () => setOpenModal(false);
 
+  const filteredMainItems = mainListItems.filter(
+    (item) => !item.role || item.role === user?.role
+  );
+   if (!mounted) return null;
+
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: "space-between" }}>
       <List dense>
-        {mainListItems.map((item, index) => {
+        {filteredMainItems.map((item, index) => {
           const selected = pathname === item.href;
           return (
             <ListItem key={index} disablePadding sx={{ display: "block" }}>

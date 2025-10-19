@@ -49,14 +49,12 @@ export default function TransactionsPage() {
       setLoading(true);
       const response = await TransactionsService.getAll();
 
-      // ✅ mantém os valores exatamente como vêm da API
       const parsed = response.map((tx: any) => ({ ...tx }));
 
       if (mountedRef.current) {
         setTransactions(parsed);
       }
     } catch (error: any) {
-      console.error("Erro ao buscar transações", error);
       if (mountedRef.current) {
         setErrorMessage(
           error.response?.status === 404

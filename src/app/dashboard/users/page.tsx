@@ -49,7 +49,6 @@ export default function UsersPage() {
       }
       setUsers(data || []);
     } catch (err) {
-      console.error(err);
       showSnackbar("Erro ao carregar usuários.", "error");
     } finally {
       setLoading(false);
